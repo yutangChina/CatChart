@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="canvas" style="width:1200px;height:360px;"></div>
+    <!-- 折线图源码1.0  -->
+    <script>
+        /**
+         * 图表 ES6
+         */
+        (function (w) {
+
+            w.CatChart = w.CatChart ? w.CatChart : {};
+
+            let _defaultGap = 56;
+            let _eleId, _option, _canvasEle, _targetHeight, _targetWidth;
+
+            //创建canvas
+            function _createCanvas() {
+                let _target = document.getElementById(_eleId);
+                _targetHeight = _target.clientHeight;
+                _targetWidth = _target.clientWidth;//目标元素宽度与高度
+                if (_targetHeight == 0 || _targetWidth == 0) {
+                    return;
+                }
+                _canvasEle = document.createElement("canvas");
+                _canvasEle.setAttribute('width', _targetWidth);
+                _canvasEle.setAttribute('height', _targetHeight);
+                _target.append(_canvasEle);
+            }
+
+            //选择图表类型
+            function _chooseChart() {
+                switch (_option.type) {
+                    case 'line':
+                        _createLineChart();
+                        break;
+                }
+            }
+
+            //创建折线图
+            function _createLineChart() {
+                let _op = _option.chart;
+                let _ctx = _canvasEle.getContext('2d');
+                let _xPoint = [], _yPoint = [];
+                let _orgin = [_defaultGap, _targetHeight - _defaultGap];//图标的原点
+                //X轴
+                _ctx.beginPath();
+                _ctx.moveTo(_defaultGap, _targetHeight - _defaultGap);
+                _ctx.lineTo(_targetWidth - _defaultGap, _targetHeight - _defaultGap);
+                _ctx.closePath();
+                _ctx.stroke();
+                //y轴
+                _ctx.beginPath();
+                _ctx.moveTo(_defaultGap, _targetHeight - _defaultGap);
+                _ctx.lineTo(_defaultGap, _defaultGap);
+                _ctx.closePath();
+                _ctx.stroke();
+
+                //绘制X轴坐标
+                let _xNum = _op.x.length;
+                let _xGap = Math.floor((_targetWidth - _defaultGap * 2) / (_xNum + 1));
+                for (let i = 0; i < _xNum; i++) {
+
+                    _xPoint.push(_xGap * (i + 1));
+                    //绘制坐标点
+                    _ctx.beginPath();
+                    _ctx.moveTo(_xGap * (i + 1), _targetHeight - _defaultGap);
+                    _ctx.lineTo(_xGap * (i + 1), _targetHeight - _defaultGap + 6);
+                    _ctx.closePath();
+                    _ctx.stroke();
+
+                    //填充文本
+                    _ctx.beginPath();
+                    _ctx.font = "16px sans-serif";
+                    let _textContent = _op.x[i];
+                    let _textInfo = _ctx.measureText(_textContent);//文本信息
+                    //_textInfo.width;//文本宽度
+                    _ctx.fillText(_textContent, _xGap * (i + 1) - (_textInfo.width / 2), _targetHeight - _defaultGap + 24);
+                    _ctx.closePath();
+                }
+                //绘制y轴坐标
+                let _yNum = _op.y.length;
+                let _yGap = Math.floor((_targetHeight - _defaultGap * 2) / (_yNum + 1));
+                for (let i = 0; i < _yNum; i++) {
+                    _yPoint.push(_targetHeight - _defaultGap - _yGap * (i + 1));
+                    //绘制坐标点
+                    _ctx.beginPath();
+                    _ctx.moveTo(_defaultGap, _targetHeight - _defaultGap - _yGap * (i + 1));
+                    _ctx.lineTo(_defaultGap - 6, _targetHeight - _defaultGap - _yGap * (i + 1));
+                    _ctx.closePath();
+                    _ctx.stroke();
+                    //填充文本，在文本中 (X,Y)指的是字符首字母的左下角的点
+                    _ctx.beginPath();
+                    _ctx.font = "16px sans-serif";
+                    let _textContent = _op.y[i];
+                    let _textInfo = _ctx.measureText(_textContent);//文本信息
+                    //_textInfo.width;//文本宽度
+                    _ctx.fillText(_textContent, _defaultGap - 6 - _textInfo.width - 6, _targetHeight - _defaultGap - _yGap * (i + 1) + _textInfo.actualBoundingBoxAscent / 2);
+                    _ctx.closePath();
+                }
+                //绘制折线
+                let _yPxDistance = _yPoint[_yPoint.length - 1] - _yPoint[0];
+                let _yLowDataBase = Number(_op.y[0]);
+                let _yUpDataBase = Number(_op.y[_op.y.length - 1]);
+                let _yDataDistance = _yUpDataBase - _yLowDataBase;
+                let _d = _op.data;
+                let _dataPoint = [];
+                for (let i = 0; i < _xPoint.length; i++) {
+                    let _dataY;
+                    let _dItem = _d[i];
+                    if (_dItem >= _yLowDataBase && _dItem <= _yUpDataBase) {
+                        _dataY = (_dItem - _yLowDataBase) / _yDataDistance * _yPxDistance + _yPoint[0];
+                    }
+                    if (_dItem < _yLowDataBase) {
+                        _dataY = (_dItem / _yLowDataBase) * (_yPoint[0] - _orgin[1]) + _orgin[1];
+                    }
+
+                    _dataPoint.push({ x: _xPoint[i], y: _dataY });
+
+                    if (i == 0) {
+                        continue;
+                    }
+                    _ctx.beginPath();
+                    _ctx.moveTo(_dataPoint[i - 1].x, _dataPoint[i - 1].y);
+                    _ctx.lineTo(_dataPoint[i].x, _dataPoint[i].y);
+                    _ctx.closePath;
+                    _ctx.stroke();
+                }
+
+            }
+            CatChart.startChart = function (eleId, option) {
+                _eleId = eleId;
+                _option = option;
+                _createCanvas();
+                _chooseChart();
+            }
+        })(window);
+
+    </script>
+
+    <script>
+        CatChart.startChart("canvas", {
+            type: 'line',
+            chart: {
+                x: ['星期一', "星期二", '星期三', '星期四', '星期五', '星期六', "星期日"],
+                y: ["100", "200", "300", "400"],
+                data: [20, 100, 200, 350, 224, 379, 101]
+            }
+        });
+    </script>
+</body>
+
+</html>
