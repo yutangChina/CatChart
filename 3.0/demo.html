@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatChart图表</title>
+</head>
+
+<body>
+
+
+
+
+
+
+    <div id="continer" style="width: 400px;height: 400px;position: relative;border: 1px solid #bbb;padding: 24px;">
+
+    </div>
+
+
+
+    <div id="continer1" style="width: 600px;height: 400px;position: relative;border: 1px solid #bbb;padding: 24px;">
+
+    </div>
+    <script src="./CatChart.js"></script>
+    <script>
+        let _c = new CatChart();
+        _c.createChart("#continer", "pie", [1048, 735, 580, 484 , 300]);
+        _c.createChart("#continer1", "line", {
+            x:[1,2,3,4,5,6],
+            y:[100,300,400,500,600,700],
+            data : [100 , 200 , 280 , 400 , 20 , 300]
+        });
+
+    </script>
+</body>
+
+</html>
